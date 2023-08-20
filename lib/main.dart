@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:project_neal/HomePage.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProjectNealApp());
 }
 

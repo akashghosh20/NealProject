@@ -1,19 +1,58 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:project_neal/constant.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../constant.dart';
 
 class Fan extends StatefulWidget {
-  const Fan({super.key});
+  const Fan({Key? key}) : super(key: key);
 
   @override
   State<Fan> createState() => _FanState();
 }
 
 class _FanState extends State<Fan> {
-  bool val1 = true;
-  onChangedMethod1(bool newVal1) {
+  bool isFanOn = false;
+  DateTime? startTime;
+  Duration elapsedDuration = Duration.zero;
+  late SharedPreferences prefs;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeSharedPreferences();
+  }
+
+  Future<void> initializeSharedPreferences() async {
+    prefs = await SharedPreferences.getInstance();
+    loadElapsedTime();
+  }
+
+  void loadElapsedTime() {
+    final storedDuration = prefs.getInt('elapsed_duration') ?? 0;
     setState(() {
-      val1 = newVal1;
+      elapsedDuration = Duration(seconds: storedDuration);
+    });
+  }
+
+  Future<void> saveElapsedTime(Duration duration) async {
+    await prefs.setInt('elapsed_duration', duration.inSeconds);
+  }
+
+  void onFanSwitchChanged(bool newValue) {
+    setState(() {
+      if (newValue) {
+        startTime = DateTime.now();
+      } else {
+        if (startTime != null) {
+          final DateTime endTime = DateTime.now();
+          elapsedDuration += endTime.difference(startTime!);
+          startTime = null;
+          saveElapsedTime(
+              elapsedDuration); // Save the elapsed time in SharedPreferences
+        }
+      }
+      isFanOn = newValue;
     });
   }
 
@@ -38,14 +77,22 @@ class _FanState extends State<Fan> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             Text('1 device'),
-            customSwich(val1, onChangedMethod1),
+            customSwitch(isFanOn, onFanSwitchChanged),
+            Text(
+              'Elapsed Time: ${formatDuration(elapsedDuration)}',
+              style: TextStyle(fontSize: 12),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget customSwich(bool val, Function onChangedMethod) {
+  String formatDuration(Duration duration) {
+    return '${duration.inHours}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+  }
+
+  Widget customSwitch(bool value, Function onChangedMethod) {
     return Padding(
       padding: const EdgeInsets.only(
         top: 22,
@@ -56,12 +103,13 @@ class _FanState extends State<Fan> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CupertinoSwitch(
-              trackColor: kFontLightGrey,
-              activeColor: kButtonDarkBlue,
-              value: val,
-              onChanged: (newVal) {
-                onChangedMethod(newVal);
-              })
+            trackColor: kFontLightGrey,
+            activeColor: kButtonDarkBlue,
+            value: value,
+            onChanged: (newValue) {
+              onChangedMethod(newValue);
+            },
+          ),
         ],
       ),
     );
