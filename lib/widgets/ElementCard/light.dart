@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:project_neal/constant.dart';
+import '../../constant.dart';
 
 class Light extends StatefulWidget {
   const Light({Key? key}) : super(key: key);
@@ -14,9 +14,9 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
   bool isLightOn = false;
   DateTime? startTime;
   Duration elapsedDuration = Duration.zero;
-  late SharedPreferences prefs;
-  double takaPerUnit = 10;
   double wattOfLight = 60;
+  double takaPerUnit = 10;
+  late SharedPreferences prefs;
 
   @override
   void initState() {
@@ -37,6 +37,7 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
     });
 
     saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
+    saveElapsedTaka(0); // Reset elapsed taka in SharedPreferences
   }
 
   @override
@@ -54,6 +55,11 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
         elapsedDuration += endTime.difference(startTime!);
         startTime = null;
         saveElapsedTime(elapsedDuration);
+
+        // Calculate and save elapsed taka
+        double elapsedTaka =
+            calculateElapsedTaka(elapsedDuration, wattOfLight / 1000);
+        saveElapsedTaka(elapsedTaka);
       }
     }
   }
@@ -74,6 +80,10 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
     await prefs.setInt('light_elapsed_duration', duration.inSeconds);
   }
 
+  Future<void> saveElapsedTaka(double taka) async {
+    await prefs.setDouble('light_elapsed_taka', taka);
+  }
+
   void onLightSwitchChanged(bool newValue) {
     setState(() {
       if (newValue) {
@@ -84,6 +94,11 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
           elapsedDuration += endTime.difference(startTime!);
           startTime = null;
           saveElapsedTime(elapsedDuration);
+
+          // Calculate and save elapsed taka
+          double elapsedTaka =
+              calculateElapsedTaka(elapsedDuration, wattOfLight / 1000);
+          saveElapsedTaka(elapsedTaka);
         }
       }
       isLightOn = newValue;

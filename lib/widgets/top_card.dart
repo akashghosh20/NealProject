@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_neal/constant.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TopCard extends StatefulWidget {
   const TopCard({super.key});
@@ -9,6 +10,26 @@ class TopCard extends StatefulWidget {
 }
 
 class _TopCardState extends State<TopCard> {
+  late SharedPreferences prefs;
+  double totalElapsedTaka = 0; // Sum of elapsed taka values
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    calculateTotalElapsedTaka();
+  }
+
+  Future<void> calculateTotalElapsedTaka() async {
+    prefs = await SharedPreferences.getInstance();
+    double fanElapsedTaka = prefs.getDouble('fan_elapsed_taka') ?? 0;
+    double lightElapsedTaka = prefs.getDouble('light_elapsed_taka') ?? 0;
+
+    setState(() {
+      totalElapsedTaka = fanElapsedTaka + lightElapsedTaka;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -20,7 +41,7 @@ class _TopCardState extends State<TopCard> {
         ),
         child: Container(
           width: MediaQuery.of(context).size.width * .95,
-          height: 120.0,
+          height: 140.0,
           padding: EdgeInsets.all(16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -57,6 +78,18 @@ class _TopCardState extends State<TopCard> {
                           ),
                           Text(
                             '28.6 kWh',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          Text(
+                            'Today',
+                            style: TextStyle(color: kFontLightGrey),
+                          ),
+                          const SizedBox(
+                            height: 4,
+                          ),
+                          Text(
+                            '${totalElapsedTaka} taka',
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           ),

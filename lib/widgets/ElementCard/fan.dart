@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../constant.dart';
 
 class Fan extends StatefulWidget {
@@ -15,10 +14,9 @@ class _FanState extends State<Fan> {
   bool isFanOn = false;
   DateTime? startTime;
   Duration elapsedDuration = Duration.zero;
-  late SharedPreferences prefs;
-
   double wattOfFan = 75; // Assuming the fan power consumption in watts
   double takaPerUnit = 10; // Cost per unit in your currency
+  late SharedPreferences prefs;
 
   @override
   void initState() {
@@ -42,6 +40,19 @@ class _FanState extends State<Fan> {
     await prefs.setInt('fan_elapsed_duration', duration.inSeconds);
   }
 
+  Future<void> saveElapsedTaka(double taka) async {
+    await prefs.setDouble('fan_elapsed_taka', taka);
+  }
+
+  void resetCalculations() {
+    setState(() {
+      elapsedDuration = Duration.zero;
+    });
+
+    saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
+    saveElapsedTaka(0); // Reset elapsed taka in SharedPreferences
+  }
+
   void onFanSwitchChanged(bool newValue) {
     setState(() {
       if (newValue) {
@@ -52,18 +63,15 @@ class _FanState extends State<Fan> {
           elapsedDuration += endTime.difference(startTime!);
           startTime = null;
           saveElapsedTime(elapsedDuration);
+
+          // Calculate and save elapsed taka
+          double elapsedTaka =
+              calculateElapsedTaka(elapsedDuration, wattOfFan / 1000);
+          saveElapsedTaka(elapsedTaka);
         }
       }
       isFanOn = newValue;
     });
-  }
-
-  void resetCalculations() {
-    setState(() {
-      elapsedDuration = Duration.zero;
-    });
-
-    saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
   }
 
   @override
@@ -71,7 +79,7 @@ class _FanState extends State<Fan> {
     return Container(
       margin: EdgeInsets.all(8),
       width: 150,
-      height: 240, // Increased the height to accommodate the Refresh button
+      height: 230,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -100,7 +108,6 @@ class _FanState extends State<Fan> {
               'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, wattOfFan / 1000)}',
               style: TextStyle(fontSize: 12),
             ),
-            SizedBox(height: 16), // Add some spacing
             ElevatedButton(
               onPressed: resetCalculations,
               child: Text('Recalculate'),
