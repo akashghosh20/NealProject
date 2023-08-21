@@ -17,6 +17,7 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
   late SharedPreferences prefs;
   double takaPerUnit = 10;
   double wattOfLight = 60;
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +29,14 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance!.removeObserver(this);
     super.dispose();
+  }
+
+  void resetCalculations() {
+    setState(() {
+      elapsedDuration = Duration.zero;
+    });
+
+    saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
   }
 
   @override
@@ -86,7 +95,7 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
     return Container(
       margin: EdgeInsets.all(8),
       width: 150,
-      height: 180,
+      height: 300,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -112,8 +121,12 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
               style: TextStyle(fontSize: 12),
             ),
             Text(
-              'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, 10.3)}',
+              'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, wattOfLight / 1000)}',
               style: TextStyle(fontSize: 12),
+            ),
+            ElevatedButton(
+              onPressed: resetCalculations,
+              child: Text('Recalculate'),
             ),
           ],
         ),
