@@ -31,7 +31,6 @@ class _TopCardState extends State<TopCard> {
         prefs.getDouble('lightBath_elapsed_taka') ?? 0;
 
     double fanBedElapsedUnit = prefs.getDouble('fanBed_elapsed_unit') ?? 0;
-
     double fanLivElapsedUnit = prefs.getDouble('fanLiv_elapsed_unit') ?? 0;
     double lightBedElapsedUnit = prefs.getDouble('lightBed_elapsed_unit') ?? 0;
     double lightLivElapsedUnit = prefs.getDouble('lightLiv_elapsed_unit') ?? 0;

@@ -49,6 +49,16 @@ class _FanBathState extends State<FanBath> {
     await prefs.setDouble('fanBath_elapsed_unit', unit);
   }
 
+  // void resetCalculations() {
+  //   setState(() {
+  //     elapsedDuration = Duration.zero;
+  //     elapsedUnitFanBath = 0;
+  //   });
+
+  //   saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
+  //   saveElapsedTaka(0); // Reset elapsed taka in SharedPreferences
+  //   saveElapsedUnit(0);
+  // }
   void resetCalculations() {
     setState(() {
       elapsedDuration = Duration.zero;
@@ -57,6 +67,7 @@ class _FanBathState extends State<FanBath> {
 
     saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
     saveElapsedTaka(0); // Reset elapsed taka in SharedPreferences
+    saveElapsedUnit(0); // Reset elapsed unit in SharedPreferences
   }
 
   void onFanSwitchChanged(bool newValue) {

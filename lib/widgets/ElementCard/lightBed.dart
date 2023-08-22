@@ -40,6 +40,7 @@ class _LightBedState extends State<LightBed> with WidgetsBindingObserver {
 
     saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
     saveElapsedTaka(0); // Reset elapsed taka in SharedPreferences
+    saveElapsedUnit(0);
   }
 
   @override
@@ -62,6 +63,10 @@ class _LightBedState extends State<LightBed> with WidgetsBindingObserver {
         double elapsedTaka =
             calculateElapsedTaka(elapsedDuration, wattOfLight / 1000);
         saveElapsedTaka(elapsedTaka);
+
+        elapsedLightBed =
+            calculateElapsedUnit(elapsedDuration, wattOfLight / 1000);
+        saveElapsedUnit(elapsedLightBed);
       }
     }
   }

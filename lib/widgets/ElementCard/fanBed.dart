@@ -57,6 +57,7 @@ class _FanBedState extends State<FanBed> {
 
     saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
     saveElapsedTaka(0); // Reset elapsed taka in SharedPreferences
+    saveElapsedUnit(0);
   }
 
   void onFanSwitchChanged(bool newValue) {
