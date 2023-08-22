@@ -15,14 +15,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          TopHeader(),
-          TopCard(),
-          MiddleTabs(),
-        ],
-      )),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            TopHeader(),
+            TopCard(),
+            MiddleTabs(),
+          ],
+        ),
+      ),
     );
   }
 }

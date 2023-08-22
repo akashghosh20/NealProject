@@ -12,6 +12,7 @@ class TopCard extends StatefulWidget {
 class _TopCardState extends State<TopCard> {
   late SharedPreferences prefs;
   double totalElapsedTaka = 0; // Sum of elapsed taka values
+  double totalElapsedUnit = 0;
 
   @override
   void initState() {
@@ -22,11 +23,41 @@ class _TopCardState extends State<TopCard> {
 
   Future<void> calculateTotalElapsedTaka() async {
     prefs = await SharedPreferences.getInstance();
-    double fanElapsedTaka = prefs.getDouble('fan_elapsed_taka') ?? 0;
-    double lightElapsedTaka = prefs.getDouble('light_elapsed_taka') ?? 0;
+    double fanBedElapsedTaka = prefs.getDouble('fanBed_elapsed_taka') ?? 0;
+    double fanLivElapsedTaka = prefs.getDouble('fanLiv_elapsed_taka') ?? 0;
+    double lightBedElapsedTaka = prefs.getDouble('lightBed_elapsed_taka') ?? 0;
+    double lightLivElapsedTaka = prefs.getDouble('lightLiv_elapsed_taka') ?? 0;
+    double lightBathElapsedTaka =
+        prefs.getDouble('lightBath_elapsed_taka') ?? 0;
 
+    double fanBedElapsedUnit = prefs.getDouble('fanBed_elapsed_unit') ?? 0;
+
+    double fanLivElapsedUnit = prefs.getDouble('fanLiv_elapsed_unit') ?? 0;
+    double lightBedElapsedUnit = prefs.getDouble('lightBed_elapsed_unit') ?? 0;
+    double lightLivElapsedUnit = prefs.getDouble('lightLiv_elapsed_unit') ?? 0;
+    double lightBathElapsedUnit =
+        prefs.getDouble('lightBath_elapsed_unit') ?? 0;
+
+// ------------ Printing ------------------------
+
+    print(fanLivElapsedUnit);
+    print(fanBedElapsedUnit);
+    print(lightBedElapsedUnit);
+    print(lightLivElapsedUnit);
+    print(lightBathElapsedUnit);
+
+//--------------------------------------
+
+    double totalfan = fanLivElapsedTaka + fanBedElapsedTaka;
+    double totalLight =
+        lightBathElapsedTaka + lightLivElapsedTaka + lightBedElapsedTaka;
     setState(() {
-      totalElapsedTaka = fanElapsedTaka + lightElapsedTaka;
+      totalElapsedTaka = totalfan + totalLight;
+      totalElapsedUnit = fanLivElapsedUnit +
+          fanBedElapsedUnit +
+          lightBathElapsedUnit +
+          lightLivElapsedUnit +
+          lightBedElapsedUnit;
     });
   }
 
@@ -77,7 +108,7 @@ class _TopCardState extends State<TopCard> {
                             height: 4,
                           ),
                           Text(
-                            '28.6 kWh',
+                            '${totalElapsedUnit} KWh',
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           ),

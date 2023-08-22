@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:project_neal/constant.dart';
 import 'package:project_neal/widgets/ElementCard/Laptop.dart';
+import 'package:project_neal/widgets/ElementCard/LaptopBath.dart';
+import 'package:project_neal/widgets/ElementCard/LaptopBed.dart';
+import 'package:project_neal/widgets/ElementCard/LaptopLiv.dart';
 import 'package:project_neal/widgets/ElementCard/fan.dart';
+import 'package:project_neal/widgets/ElementCard/fanBath.dart';
+import 'package:project_neal/widgets/ElementCard/fanBed.dart';
+import 'package:project_neal/widgets/ElementCard/fanLiv.dart';
 import 'package:project_neal/widgets/ElementCard/light.dart';
+import 'package:project_neal/widgets/ElementCard/lightBath.dart';
+import 'package:project_neal/widgets/ElementCard/lightBed.dart';
+import 'package:project_neal/widgets/ElementCard/lightLiv.dart';
 import 'package:project_neal/widgets/ElementCard/other.dart';
+import 'package:project_neal/widgets/ElementCard/otherBath.dart';
+import 'package:project_neal/widgets/ElementCard/otherBed.dart';
+import 'package:project_neal/widgets/ElementCard/otherLiv.dart';
 import 'package:project_neal/widgets/SquareCard/bath_room.dart';
 import 'package:project_neal/widgets/SquareCard/bed_room.dart';
 import 'package:project_neal/widgets/SquareCard/dining_room.dart';
@@ -39,11 +51,24 @@ class _MiddleTabsState extends State<MiddleTabs> with TickerProviderStateMixin {
     DiningRoom(),
   ];
 
-  List elementWidget = [
-    Light(),
-    Fan(),
-    Laptop(),
-    Other(),
+  List elementWidgetLiv = [
+    LightLiv(),
+    FanLiv(),
+    LaptopLiv(),
+    OtherLiv(),
+  ];
+
+  List elementWidgetBed = [
+    LightBed(),
+    FanBed(),
+    LaptopBed(),
+    OtherBed(),
+  ];
+
+  List elementWidgetBath = [
+    LightBath(),
+    LaptopBath(),
+    OtherBath(),
   ];
 
   @override
@@ -99,21 +124,21 @@ class _MiddleTabsState extends State<MiddleTabs> with TickerProviderStateMixin {
                   itemCount: 4,
                   itemBuilder: (_, index) {
                     return Container(
-                      child: elementWidget[index],
+                      child: elementWidgetLiv[index],
                     );
                   }),
               ListView.builder(
                   itemCount: 4,
                   itemBuilder: (_, index) {
                     return Container(
-                      child: elementWidget[index],
+                      child: elementWidgetBed[index],
                     );
                   }),
               ListView.builder(
-                  itemCount: 4,
+                  itemCount: 3,
                   itemBuilder: (_, index) {
                     return Container(
-                      child: elementWidget[index],
+                      child: elementWidgetBath[index],
                     );
                   }),
             ]),

@@ -3,65 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constant.dart';
 
-class Light extends StatefulWidget {
-  const Light({Key? key}) : super(key: key);
+class FanBath extends StatefulWidget {
+  const FanBath({Key? key}) : super(key: key);
 
   @override
-  State<Light> createState() => _LightState();
+  State<FanBath> createState() => _FanBathState();
 }
 
-class _LightState extends State<Light> with WidgetsBindingObserver {
-  bool isLightOn = false;
+class _FanBathState extends State<FanBath> {
+  bool isFanOn = false;
   DateTime? startTime;
   Duration elapsedDuration = Duration.zero;
-  double wattOfLight = 60;
-  double takaPerUnit = 10;
+  double wattOfFan = 75; // Assuming the fan power consumption in watts
+  double takaPerUnit = 10; // Cost per unit in your currency
+  double elapsedUnitFanBath = 0;
   late SharedPreferences prefs;
 
   @override
   void initState() {
     super.initState();
     initializeSharedPreferences();
-    WidgetsBinding.instance!.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
-    super.dispose();
-  }
-
-  void resetCalculations() {
-    setState(() {
-      elapsedDuration = Duration.zero;
-    });
-
-    saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
-    saveElapsedTaka(0); // Reset elapsed taka in SharedPreferences
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      if (isLightOn) {
-        // Save the elapsed time when app is paused or inactive
-        startTime = DateTime.now();
-      }
-    } else if (state == AppLifecycleState.resumed) {
-      // Restore elapsed time when app is resumed
-      if (startTime != null) {
-        final DateTime endTime = DateTime.now();
-        elapsedDuration += endTime.difference(startTime!);
-        startTime = null;
-        saveElapsedTime(elapsedDuration);
-
-        // Calculate and save elapsed taka
-        double elapsedTaka =
-            calculateElapsedTaka(elapsedDuration, wattOfLight / 1000);
-        saveElapsedTaka(elapsedTaka);
-      }
-    }
   }
 
   Future<void> initializeSharedPreferences() async {
@@ -70,27 +31,35 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
   }
 
   void loadElapsedTime() {
-    final storedDuration = prefs.getInt('light_elapsed_duration') ?? 0;
+    final storedDuration = prefs.getInt('fanBath_elapsed_duration') ?? 0;
     setState(() {
       elapsedDuration = Duration(seconds: storedDuration);
     });
   }
-  // void loadElapsedUnit() {
-  //   final storedUnit = prefs.getInt('light_elapsed_unit') ?? 0;
-  //   setState(() {
-  //     elapsedDuration = Duration(seconds: storedDuration);
-  //   });
-  // }
 
   Future<void> saveElapsedTime(Duration duration) async {
-    await prefs.setInt('light_elapsed_duration', duration.inSeconds);
+    await prefs.setInt('fanBath_elapsed_duration', duration.inSeconds);
   }
 
   Future<void> saveElapsedTaka(double taka) async {
-    await prefs.setDouble('light_elapsed_taka', taka);
+    await prefs.setDouble('fanBath_elapsed_taka', taka);
   }
 
-  void onLightSwitchChanged(bool newValue) {
+  Future<void> saveElapsedUnit(double unit) async {
+    await prefs.setDouble('fanBath_elapsed_unit', unit);
+  }
+
+  void resetCalculations() {
+    setState(() {
+      elapsedDuration = Duration.zero;
+      elapsedUnitFanBath = 0;
+    });
+
+    saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
+    saveElapsedTaka(0); // Reset elapsed taka in SharedPreferences
+  }
+
+  void onFanSwitchChanged(bool newValue) {
     setState(() {
       if (newValue) {
         startTime = DateTime.now();
@@ -103,11 +72,14 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
 
           // Calculate and save elapsed taka
           double elapsedTaka =
-              calculateElapsedTaka(elapsedDuration, wattOfLight / 1000);
+              calculateElapsedTaka(elapsedDuration, wattOfFan / 1000);
+          double elapsedUnitFanBath =
+              calculateElapsedUnit(elapsedDuration, wattOfFan / 1000);
+          saveElapsedUnit(elapsedUnitFanBath);
           saveElapsedTaka(elapsedTaka);
         }
       }
-      isLightOn = newValue;
+      isFanOn = newValue;
     });
   }
 
@@ -116,7 +88,7 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
     return Container(
       margin: EdgeInsets.all(8),
       width: 150,
-      height: 300,
+      height: 230,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -126,23 +98,23 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.lightbulb),
+            Icon(Icons.recycling),
             Text(
-              'Light',
+              'Fan',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             Text('1 device'),
-            customSwitch(isLightOn, onLightSwitchChanged),
+            customSwitch(isFanOn, onFanSwitchChanged),
             Text(
               'Elapsed Time: ${formatDuration(elapsedDuration)}',
               style: TextStyle(fontSize: 12),
             ),
             Text(
-              'Elapsed Unit: ${calculateElapsedUnit(elapsedDuration, wattOfLight / 1000)}',
+              'Elapsed Unit: ${calculateElapsedUnit(elapsedDuration, wattOfFan / 1000)}',
               style: TextStyle(fontSize: 12),
             ),
             Text(
-              'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, wattOfLight / 1000)}',
+              'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, wattOfFan / 1000)}',
               style: TextStyle(fontSize: 12),
             ),
             ElevatedButton(
@@ -183,8 +155,8 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
             trackColor: kFontLightGrey,
             activeColor: kButtonDarkBlue,
             value: value,
-            onChanged: (newVal) {
-              onChangedMethod(newVal);
+            onChanged: (newValue) {
+              onChangedMethod(newValue);
             },
           ),
         ],

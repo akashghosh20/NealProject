@@ -3,19 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constant.dart';
 
-class Light extends StatefulWidget {
-  const Light({Key? key}) : super(key: key);
+class LightBath extends StatefulWidget {
+  const LightBath({Key? key}) : super(key: key);
 
   @override
-  State<Light> createState() => _LightState();
+  State<LightBath> createState() => _LightBathState();
 }
 
-class _LightState extends State<Light> with WidgetsBindingObserver {
+class _LightBathState extends State<LightBath> with WidgetsBindingObserver {
   bool isLightOn = false;
   DateTime? startTime;
   Duration elapsedDuration = Duration.zero;
   double wattOfLight = 60;
   double takaPerUnit = 10;
+  double elapsedUnitlightBath = 0;
   late SharedPreferences prefs;
 
   @override
@@ -34,6 +35,7 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
   void resetCalculations() {
     setState(() {
       elapsedDuration = Duration.zero;
+      elapsedUnitlightBath = 0;
     });
 
     saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
@@ -70,7 +72,7 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
   }
 
   void loadElapsedTime() {
-    final storedDuration = prefs.getInt('light_elapsed_duration') ?? 0;
+    final storedDuration = prefs.getInt('lightBath_elapsed_duration') ?? 0;
     setState(() {
       elapsedDuration = Duration(seconds: storedDuration);
     });
@@ -83,11 +85,15 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
   // }
 
   Future<void> saveElapsedTime(Duration duration) async {
-    await prefs.setInt('light_elapsed_duration', duration.inSeconds);
+    await prefs.setInt('lightBath_elapsed_duration', duration.inSeconds);
   }
 
   Future<void> saveElapsedTaka(double taka) async {
-    await prefs.setDouble('light_elapsed_taka', taka);
+    await prefs.setDouble('lightBath_elapsed_taka', taka);
+  }
+
+  Future<void> saveElapsedUnit(double unit) async {
+    await prefs.setDouble('lightBath_elapsed_unit', unit);
   }
 
   void onLightSwitchChanged(bool newValue) {
@@ -104,6 +110,9 @@ class _LightState extends State<Light> with WidgetsBindingObserver {
           // Calculate and save elapsed taka
           double elapsedTaka =
               calculateElapsedTaka(elapsedDuration, wattOfLight / 1000);
+          elapsedUnitlightBath =
+              calculateElapsedUnit(elapsedDuration, wattOfLight / 1000);
+          saveElapsedUnit(elapsedUnitlightBath);
           saveElapsedTaka(elapsedTaka);
         }
       }
