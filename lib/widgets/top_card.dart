@@ -60,6 +60,13 @@ class _TopCardState extends State<TopCard> {
     });
   }
 
+  void resetValues() {
+    setState(() {
+      totalElapsedTaka = 0;
+      totalElapsedUnit = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -71,7 +78,7 @@ class _TopCardState extends State<TopCard> {
         ),
         child: Container(
           width: MediaQuery.of(context).size.width * .95,
-          height: 140.0,
+          height: 180.0,
           padding: EdgeInsets.all(16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -127,6 +134,7 @@ class _TopCardState extends State<TopCard> {
                       ),
                     ],
                   ),
+                  ElevatedButton(onPressed: resetValues, child: Text("Reset"))
                 ],
               ),
               Column(
