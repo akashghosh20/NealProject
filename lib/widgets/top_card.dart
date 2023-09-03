@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_neal/constant.dart';
+import 'package:project_neal/widgets/GraphShow.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TopCard extends StatefulWidget {
@@ -134,7 +135,24 @@ class _TopCardState extends State<TopCard> {
                       ),
                     ],
                   ),
-                  ElevatedButton(onPressed: resetValues, child: Text("Reset"))
+                  Row(
+                    children: [
+                      ElevatedButton(
+                          onPressed: resetValues, child: Text("Reset")),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ShowGraph(),
+                                ));
+                          },
+                          child: Text("Graph")),
+                    ],
+                  )
                 ],
               ),
               Column(

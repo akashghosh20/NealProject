@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:project_neal/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../constant.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class LightLiv extends StatefulWidget {
   const LightLiv({Key? key}) : super(key: key);
@@ -14,21 +15,30 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
   bool isLightOn = false;
   DateTime? startTime;
   Duration elapsedDuration = Duration.zero;
-  double wattOfLight = 60;
+  double? voltage;
+  double? current;
   double takaPerUnit = 10;
   double elapsedUnitLightliv = 0;
   late SharedPreferences prefs;
+  DatabaseReference? databaseReference;
 
   @override
   void initState() {
     super.initState();
     initializeSharedPreferences();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
+
+    // Initialize the database reference
+    databaseReference =
+        FirebaseDatabase.instance.reference().child('sensor_data');
+
+    // Load current and voltage data from Firebase
+    loadCurrentAndVoltage();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -60,11 +70,11 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
         saveElapsedTime(elapsedDuration);
 
         // Calculate and save elapsed taka
-        double elapsedTaka =
-            calculateElapsedTaka(elapsedDuration, wattOfLight / 1000);
+        double elapsedTaka = calculateElapsedTaka(
+            elapsedDuration, voltage! * current! * 0.89 / 1000);
         saveElapsedTaka(elapsedTaka);
-        elapsedUnitLightliv =
-            calculateElapsedUnit(elapsedDuration, wattOfLight / 1000);
+        elapsedUnitLightliv = calculateElapsedUnit(
+            elapsedDuration, voltage! * current! * 0.89 / 1000);
         saveElapsedUnit(elapsedUnitLightliv);
       }
     }
@@ -106,10 +116,10 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
           saveElapsedTime(elapsedDuration);
 
           // Calculate and save elapsed taka
-          double elapsedTaka =
-              calculateElapsedTaka(elapsedDuration, wattOfLight / 1000);
-          elapsedUnitLightliv =
-              calculateElapsedUnit(elapsedDuration, wattOfLight / 1000);
+          double elapsedTaka = calculateElapsedTaka(
+              elapsedDuration, voltage! * current! * 0.89 / 1000);
+          elapsedUnitLightliv = calculateElapsedUnit(
+              elapsedDuration, voltage! * current! * 0.89 / 1000);
           saveElapsedUnit(elapsedUnitLightliv);
           saveElapsedTaka(elapsedTaka);
         }
@@ -118,48 +128,81 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
     });
   }
 
+  void loadCurrentAndVoltage() {
+    if (databaseReference != null) {
+      databaseReference!.onValue.listen((event) {
+        DataSnapshot dataSnapshot = event.snapshot;
+        Map<dynamic, dynamic>? data =
+            dataSnapshot.value as Map<dynamic, dynamic>?;
+
+        if (data != null) {
+          double? currentData = data['current'] as double?;
+          double? voltageData = data['voltage'] as double?;
+
+          // Update the state with the loaded data
+          setState(() {
+            current = currentData;
+            voltage = voltageData;
+          });
+        }
+      }, onError: (error) {
+        print('Error loading data from Firebase: $error');
+      });
+    } else {
+      print(
+          'Database reference is null. Make sure it is properly initialized.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.all(8),
-      width: 150,
-      height: 300,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.lightbulb),
-            Text(
-              'Light',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Text('1 device'),
-            customSwitch(isLightOn, onLightSwitchChanged),
-            Text(
-              'Elapsed Time: ${formatDuration(elapsedDuration)}',
-              style: TextStyle(fontSize: 12),
-            ),
-            Text(
-              'Elapsed Unit: ${calculateElapsedUnit(elapsedDuration, wattOfLight / 1000)}',
-              style: TextStyle(fontSize: 12),
-            ),
-            Text(
-              'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, wattOfLight / 1000)}',
-              style: TextStyle(fontSize: 12),
-            ),
-            ElevatedButton(
-              onPressed: resetCalculations,
-              child: Text('Recalculate'),
-            ),
-          ],
+    if (current == null || voltage == null) {
+      // Handle loading or error state
+      return CircularProgressIndicator(); // or show an error message
+    } else {
+      // Data is loaded, display your widget with current and voltage
+      return Container(
+        margin: EdgeInsets.all(8),
+        width: 150,
+        height: 300,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
         ),
-      ),
-    );
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.lightbulb),
+              Text(
+                'Light',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text('1 device'),
+              customSwitch(isLightOn, onLightSwitchChanged),
+              Text(
+                'Elapsed Time: ${formatDuration(elapsedDuration)}',
+                style: TextStyle(fontSize: 12),
+              ),
+              Text(
+                'Elapsed Unit: ${calculateElapsedUnit(elapsedDuration, voltage! * current! * 0.89 / 1000)}',
+                style: TextStyle(fontSize: 12),
+              ),
+              Text(
+                'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, voltage! * current! * 0.89 / 1000)}',
+                style: TextStyle(fontSize: 12),
+              ),
+              ElevatedButton(
+                onPressed: resetCalculations,
+                child: Text('Recalculate'),
+              ),
+              // Display voltage value
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   String formatDuration(Duration duration) {
@@ -168,12 +211,12 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
 
   double calculateElapsedUnit(Duration duration, double powerKW) {
     double totalHours = duration.inSeconds / 3600;
-    return double.parse(totalHours.toStringAsFixed(4)) * powerKW;
+    return totalHours * powerKW;
   }
 
   double calculateElapsedTaka(Duration duration, double powerKW) {
     double totalHours = duration.inSeconds / 3600;
-    return double.parse(totalHours.toStringAsFixed(4)) * powerKW * takaPerUnit;
+    return totalHours * powerKW * takaPerUnit;
   }
 
   Widget customSwitch(bool value, Function onChangedMethod) {
